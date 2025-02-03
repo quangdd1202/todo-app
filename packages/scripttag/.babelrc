@@ -1,0 +1,9 @@
+{
+  "presets": ["@babel/env", "@babel/react"],
+  "plugins": [
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-transform-runtime",
+    ["@babel/transform-async-to-generator"],
+    "@babel/plugin-syntax-jsx"
+  ]
+}
