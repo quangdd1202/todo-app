@@ -1,21 +1,32 @@
 import {Firestore, FieldValue} from '@google-cloud/firestore';
+import {getOrderBy, paginateQuery} from '@functions/repositories/helper';
 
 const firestore = new Firestore();
 /** @type CollectionReference */
 const collection = firestore.collection('todos');
 
-async function getTodosByShopifyId(shopifyId) {
-  const snapshot = await collection.where('shopifyId', '==', shopifyId).get();
-  if (snapshot.empty) {
-    return [];
+async function getTodosByShopifyId(shopifyId, query = {}) {
+  const {sortField, direction} = getOrderBy(query.sort);
+
+  const {search} = query;
+
+  let queriedRef = collection.where('shopifyId', '==', shopifyId).orderBy(sortField, direction);
+
+  if (search) {
+    queriedRef = queriedRef.where('title', '==', search);
   }
 
-  return snapshot.docs.map(doc => {
-    return {
-      id: doc.id,
-      ...doc.data()
-    };
-  });
+  return paginateQuery({queriedRef, collection, query});
+}
+
+async function getTodoByDocId(todoDocId) {
+  const snapshot = await collection.doc(todoDocId).get();
+
+  if (!snapshot.exists) {
+    return false;
+  }
+
+  return snapshot;
 }
 
 async function addTodo(shopifyId, data) {
@@ -30,15 +41,18 @@ async function addTodo(shopifyId, data) {
 }
 
 async function deleteTodoByDocId(todoDocId) {
-  const snapshot = await collection.doc(todoDocId).get();
+  await collection.doc(todoDocId).delete();
 
-  if (!snapshot.exists) {
-    return false;
-  }
-
-  await snapshot.ref.delete();
-
-  return snapshot.id;
+  return todoDocId;
 }
 
-export {getTodosByShopifyId, addTodo, deleteTodoByDocId};
+async function saveTodoByDocId(todoDocId, data) {
+  await collection.doc(todoDocId).update({
+    ...data,
+    updatedAt: FieldValue.serverTimestamp()
+  });
+
+  return todoDocId;
+}
+
+export {getTodosByShopifyId, addTodo, deleteTodoByDocId, saveTodoByDocId};

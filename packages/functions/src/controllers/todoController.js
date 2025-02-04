@@ -2,27 +2,22 @@ import {getCurrentShop} from '@functions/helpers/auth';
 import {
   addTodo,
   deleteTodoByDocId,
-  getTodosByShopifyId
+  getTodosByShopifyId,
+  saveTodoByDocId
 } from '@functions/repositories/todoRepository';
 
-/**
- * @param {Context|Object|*} ctx
- * @returns {Promise<{data: *[], total?: number, pageInfo?: {hasNext: boolean, hasPre: boolean, totalPage?: number}}>}
- */
 async function getList(ctx) {
   try {
     const shopId = getCurrentShop(ctx);
+    const query = ctx.query;
 
-    return (ctx.body = {data: await getTodosByShopifyId(shopId)});
+    return (ctx.body = {success: true, ...(await getTodosByShopifyId(shopId, query))});
   } catch (e) {
     console.error(e);
-    return (ctx.body = {data: [], error: e.message});
+    return (ctx.body = {success: false, data: [], error: e.message});
   }
 }
 
-/**
- * @param {Object} ctx
- */
 async function createTodo(ctx) {
   try {
     const shopId = getCurrentShop(ctx);
@@ -50,4 +45,17 @@ async function deleteTodo(ctx) {
   }
 }
 
-export {getList, createTodo, deleteTodo};
+async function editTodo(ctx) {
+  try {
+    const {id: todoDocId, ...data} = ctx.req.body;
+
+    const updatedTodoId = await saveTodoByDocId(todoDocId, data);
+
+    return (ctx.body = {success: true, message: 'Todo updated', updatedTodoId});
+  } catch (e) {
+    console.error(e);
+    return (ctx.body = {success: false, error: e.message});
+  }
+}
+
+export {getList, createTodo, deleteTodo, editTodo};

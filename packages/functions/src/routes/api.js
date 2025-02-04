@@ -22,6 +22,7 @@ export default function apiRouter(isEmbed = false) {
   router.get('/todos', todoController.getList);
   router.post('/createTodo', todoController.createTodo);
   router.delete('/deleteTodo', todoController.deleteTodo);
+  router.put('/editTodo', todoController.editTodo);
 
   return router;
 }

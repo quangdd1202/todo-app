@@ -1,5 +1,5 @@
 (function() {
-  const BASE_URL = 'https://charity-murder-point-petition.trycloudflare.com/scripttag';
+  const BASE_URL = 'https://complexity-sports-drivers-overseas.trycloudflare.com/scripttag';
 
   const scriptElement = document.createElement('script');
   scriptElement.type = 'text/javascript';
